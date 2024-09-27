@@ -1,5 +1,6 @@
 #include "game.h"
 #include "utils.h"
+#include <stdio.h>
 
 int initGame(Game* game) {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -28,23 +29,29 @@ int initGame(Game* game) {
 
 void gameLoop(Game* game) {
     SDL_Event e;
+    const Uint8* currentKeyStates;
 
     while (game->isRunning) {
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
                 game->isRunning = 0;
             }
-            handlePlayerInput(&game->player, &e);
 
-            // Add level switching logic
             if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_n) {
                 int nextLevel = (game->levelManager.currentLevel + 1) % game->levelManager.totalLevels;
-                loadLevel(&game->levelManager, nextLevel);
-                // Reset player position for the new level
-                game->player.x = 100;
-                game->player.y = 100;
+                if (nextLevel >= 0 && nextLevel < game->levelManager.totalLevels) {
+                    loadLevel(&game->levelManager, nextLevel);
+                    game->player.x = 100;
+                    game->player.y = 100;
+                    printf("Switched to level %d\n", nextLevel + 1);  // Debug print
+                } else {
+                    printf("Error: Invalid next level %d\n", nextLevel + 1);
+                }
             }
         }
+
+        currentKeyStates = SDL_GetKeyboardState(NULL);
+        handlePlayerInput(&game->player, currentKeyStates);
 
         updatePlayer(&game->player);
         checkCollisionCurrentLevel(&game->player, &game->levelManager);
@@ -57,7 +64,7 @@ void gameLoop(Game* game) {
 
         SDL_RenderPresent(game->renderer);
 
-        SDL_Delay(16); // Cap at ~60 FPS
+        SDL_Delay(16);
     }
 }
 

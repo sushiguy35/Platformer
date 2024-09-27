@@ -8,10 +8,11 @@ typedef struct {
     float vx, vy;
     int width, height;
     int isJumping;
+    int jumpTimer;
 } Player;
 
 void initPlayer(Player* player);
-void handlePlayerInput(Player* player, SDL_Event* e);
+void handlePlayerInput(Player* player, const Uint8* currentKeyStates);
 void updatePlayer(Player* player);
 void renderPlayer(SDL_Renderer* renderer, Player* player);
 

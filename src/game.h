@@ -5,9 +5,6 @@
 #include "player.h"
 #include "level.h"
 
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
-
 typedef struct {
     SDL_Window* window;
     SDL_Renderer* renderer;
