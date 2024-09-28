@@ -1,0 +1,10 @@
+{
+    "makefile.makefilePath": "./",
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/sushiguy/dev/platformer",
+            "binaryPath": "/home/sushiguy/dev/platformer/platformer",
+            "binaryArgs": []
+        }
+    ]
+}

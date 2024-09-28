@@ -1,3 +1,4 @@
+// game.c
 #include "game.h"
 #include "utils.h"
 #include <stdio.h>
@@ -39,14 +40,10 @@ void gameLoop(Game* game) {
 
             if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_n) {
                 int nextLevel = (game->levelManager.currentLevel + 1) % game->levelManager.totalLevels;
-                if (nextLevel >= 0 && nextLevel < game->levelManager.totalLevels) {
-                    loadLevel(&game->levelManager, nextLevel);
-                    game->player.x = 100;
-                    game->player.y = 100;
-                    printf("Switched to level %d\n", nextLevel + 1);  // Debug print
-                } else {
-                    printf("Error: Invalid next level %d\n", nextLevel + 1);
-                }
+                loadLevel(&game->levelManager, nextLevel);
+                game->player.x = 100;
+                game->player.y = 100;
+                printf("Switched to level %d\n", nextLevel + 1);  // Debug print
             }
         }
 

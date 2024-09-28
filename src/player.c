@@ -3,7 +3,6 @@
 #include <stdio.h>
 
 #define PLAYER_SPEED 5.0f
-#define JUMP_INITIAL_VELOCITY -10.0f
 #define MAX_JUMP_TIME 15
 
 void initPlayer(Player* player) {
@@ -14,7 +13,7 @@ void initPlayer(Player* player) {
     player->width = 32;
     player->height = 32;
     player->isJumping = 0;
-    player->jumpTimer = 0;
+    player->jumpForce = -12;
 }
 
 void handlePlayerInput(Player* player, const Uint8* currentKeyStates) {
@@ -26,17 +25,11 @@ void handlePlayerInput(Player* player, const Uint8* currentKeyStates) {
         player->vx = PLAYER_SPEED;
     }
     
-    if (currentKeyStates[SDL_SCANCODE_SPACE]) {
+    if (currentKeyStates[SDL_SCANCODE_UP]) {
         if (!player->isJumping) {
             player->isJumping = 1;
-            player->jumpTimer = 0;
-            player->vy = JUMP_INITIAL_VELOCITY;
-        } else if (player->jumpTimer < MAX_JUMP_TIME) {
-            player->vy = JUMP_INITIAL_VELOCITY;
-            player->jumpTimer++;
+            player->vy = player->jumpForce;
         }
-    } else {
-        player->isJumping = 0;
     }
 }
 
@@ -44,8 +37,7 @@ void updatePlayer(Player* player) {
     player->x += player->vx;
     player->y += player->vy;
 
-    printf("Player position: (%.2f, %.2f), velocity: (%.2f, %.2f), isJumping: %d\n", 
-           player->x, player->y, player->vx, player->vy, player->isJumping);  // Debug print
+    
 }
 
 void renderPlayer(SDL_Renderer* renderer, Player* player) {

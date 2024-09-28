@@ -1,3 +1,4 @@
+// level.c
 #include "level.h"
 #include "utils.h"
 #include <stdio.h>
@@ -5,11 +6,12 @@
 #include <string.h>
 #include <float.h>
 
-
 void initLevelManager(LevelManager* levelManager) {
     levelManager->currentLevel = 0;
     levelManager->totalLevels = 0;
-    
+    for (int i = 0; i < MAX_LEVELS; i++) {
+        levelManager->levels[i].platformCount = 0;  // Initialize platformCount for each level
+    }
     loadLevelsFromFile(levelManager, "levels.txt");
 }
 
@@ -30,32 +32,39 @@ void loadLevelsFromFile(LevelManager* levelManager, const char* filename) {
         if (strstr(line, "MAX_LEVELS")) {
             sscanf(line, "MAX_LEVELS = %d;", &levelManager->totalLevels);
             printf("Set total levels to: %d\n", levelManager->totalLevels);  // Debug print
-        } else if (strchr(line, ':')) {
-            sscanf(line, "%d:", &currentLevel);
+        } 
+        else if (strstr(line, "Level")) {
+            sscanf(line, "Level %d:", &currentLevel);
             currentLevel--;  // Adjust for 0-based index
-            printf("Processing level: %d\n", currentLevel + 1);  // Debug print
             if (currentLevel < 0 || currentLevel >= MAX_LEVELS) {
                 printf("Error: Invalid level number %d\n", currentLevel + 1);
                 continue;
             }
-            levelManager->levels[currentLevel].platformCount = 0;
-        } else if (strstr(line, "(")) {
+            printf("Processing level: %d\n", currentLevel + 1);  // Debug print
+        } 
+        else if (!strchr(line, ':') && strlen(line) > 0) {
             if (currentLevel < 0 || currentLevel >= MAX_LEVELS) {
                 printf("Error: Trying to add platform to invalid level %d\n", currentLevel + 1);
                 continue;
             }
-            Platform platform;
-            char colorName[20];
-            sscanf(line, "(%d, %d, %d, %d, %[^)])", 
-                   &platform.rect.x, &platform.rect.y, 
-                   &platform.rect.w, &platform.rect.h, 
-                   colorName);
 
-            if (strcmp(colorName, "green") == 0) {
-                platform.color = (SDL_Color){0, 255, 0, 255};
-            } else {
-                platform.color = (SDL_Color){255, 255, 255, 255};
-            }
+            Platform platform;
+            float r, g, b, a; // Change to float if reading 0.0 to 1.0
+            sscanf(line, "%d %d %d %d %f %f %f %f", 
+                &platform.rect.x, &platform.rect.y, 
+                &platform.rect.w, &platform.rect.h, 
+                &r, &g, &b, &a);
+
+            platform.color.r = (Uint8)(fmax(0, fmin(255, r * 255.0f)));
+            platform.color.g = (Uint8)(fmax(0, fmin(255, g * 255.0f)));
+            platform.color.b = (Uint8)(fmax(0, fmin(255, b * 255.0f)));
+            platform.color.a = (Uint8)(fmax(0, fmin(255, a * 255.0f)));
+
+
+            // Debug print color values to confirm they're parsed correctly
+            printf("Parsed platform color: r=%d, g=%d, b=%d, a=%d\n", 
+                   platform.color.r, platform.color.g, 
+                   platform.color.b, platform.color.a);
 
             Level* level = &levelManager->levels[currentLevel];
             if (level->platformCount >= MAX_PLATFORMS) {
@@ -93,6 +102,11 @@ void renderCurrentLevel(SDL_Renderer* renderer, LevelManager* levelManager) {
         return;
     }
     Level* currentLevel = &levelManager->levels[levelManager->currentLevel];
+    if (currentLevel->platformCount == 0) {
+        printf("Warning: Attempting to render empty level %d\n", levelManager->currentLevel + 1);
+        return;
+    }
+
     for (int i = 0; i < currentLevel->platformCount; i++) {
         Platform* platform = &currentLevel->platforms[i];
         SDL_SetRenderDrawColor(renderer, 
@@ -104,6 +118,8 @@ void renderCurrentLevel(SDL_Renderer* renderer, LevelManager* levelManager) {
     }
 }
 
+
+
 void checkCollisionCurrentLevel(Player* player, LevelManager* levelManager) {
     if (levelManager->currentLevel < 0 || levelManager->currentLevel >= levelManager->totalLevels) {
         printf("Error: Trying to check collisions for invalid level %d\n", levelManager->currentLevel + 1);
@@ -111,6 +127,11 @@ void checkCollisionCurrentLevel(Player* player, LevelManager* levelManager) {
     }
     
     Level* currentLevel = &levelManager->levels[levelManager->currentLevel];
+    if (currentLevel->platformCount == 0) {
+        printf("Warning: Attempting to check collisions for empty level %d\n", levelManager->currentLevel + 1);
+        return;
+    }
+
     float nextX = player->x + player->vx;
     float nextY = player->y + player->vy;
     SDL_Rect nextPlayerRect = {(int)nextX, (int)nextY, player->width, player->height};
@@ -161,6 +182,7 @@ void checkCollisionCurrentLevel(Player* player, LevelManager* levelManager) {
     for (int i = 0; i < currentLevel->platformCount; i++) {
         if (SDL_HasIntersection(&feetRect, &currentLevel->platforms[i].rect)) {
             onPlatform = true;
+            player->isJumping = true;
             break;
         }
     }

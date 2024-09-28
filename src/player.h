@@ -8,7 +8,7 @@ typedef struct {
     float vx, vy;
     int width, height;
     int isJumping;
-    int jumpTimer;
+    int jumpForce;
 } Player;
 
 void initPlayer(Player* player);

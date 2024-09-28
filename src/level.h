@@ -1,12 +1,13 @@
+// level.h
 #ifndef LEVEL_H
 #define LEVEL_H
 
 #include <SDL2/SDL.h>
-#include <stdbool.h>
 #include "player.h"
+#include <stdbool.h>
 
-#define MAX_PLATFORMS 20
-#define MAX_LEVELS 10
+#define MAX_LEVELS 1
+#define MAX_PLATFORMS 100
 
 typedef struct {
     SDL_Rect rect;
