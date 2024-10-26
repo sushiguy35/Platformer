@@ -2,6 +2,7 @@
 #include "game.h"
 #include "utils.h"
 #include <stdio.h>
+#include "level.h"
 
 int initGame(Game* game) {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -24,6 +25,8 @@ int initGame(Game* game) {
     game->isRunning = 1;
     initPlayer(&game->player);
     initLevelManager(&game->levelManager);
+
+    setPlayerStartPos(&game->player, playerStartPosition);
 
     return 0;
 }
@@ -49,7 +52,6 @@ void gameLoop(Game* game) {
 
         currentKeyStates = SDL_GetKeyboardState(NULL);
         handlePlayerInput(&game->player, currentKeyStates);
-
         updatePlayer(&game->player);
         checkCollisionCurrentLevel(&game->player, &game->levelManager);
 
